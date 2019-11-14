@@ -7,7 +7,6 @@ package main
 import (
 	"fmt"
 	"go-gypsy/yaml"
-	"image/jpeg"
 	"net"
 	"net/http"
 	"os"
@@ -19,6 +18,7 @@ import (
 
 	logger "ScreenStreamer/logger_seelog"
 	ljpeg "github.com/pixiv/go-libjpeg/jpeg"
+
 	"screenshot"
 	"seelog"
 	"stoppableListener"
@@ -270,7 +270,6 @@ func main() {
 	server := http.Server{}
 
 	var swg sync.WaitGroup
-	var wg sync.WaitGroup
 	go func() {
 		swg.Add(1)
 		defer swg.Done()
@@ -279,8 +278,7 @@ func main() {
 
 	if Mode == "single" {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
+
 			std_interval := float64(1.0 / float64(Fps))
 			time_to_sleep := std_interval
 			s := time.Now()
@@ -315,8 +313,6 @@ func main() {
 		}()
 	} else if Mode == "single-single" {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
 			std_interval := float64(1.0 / float64(Fps))
 			time_to_sleep := std_interval
 			s := time.Now()
@@ -346,8 +342,6 @@ func main() {
 		}()
 
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
 			for {
 				if Done {
 					return
@@ -355,6 +349,7 @@ func main() {
 				img := <-handlers.Buffer
 				sio := stringio.New()
 				err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
+
 				if err == nil {
 					sio.Seek(0, 0)
 					handlers.Images <- sio
@@ -363,8 +358,6 @@ func main() {
 		}()
 	} else if Mode == "single-multi" {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
 			std_interval := float64(1.0 / float64(Fps))
 			time_to_sleep := std_interval
 			s := time.Now()
@@ -396,8 +389,6 @@ func main() {
 		for i := 0; i < Convert; i += 1 {
 			go func(id int) {
 				Log.Info(fmt.Sprintf("converter: %d", id))
-				wg.Add(1)
-				defer wg.Done()
 				for {
 					if Done {
 						return
@@ -416,11 +407,9 @@ func main() {
 		for i := 0; i < Convert; i += 1 {
 			go func(id int) {
 				Log.Info(fmt.Sprintf("converter: %d", id))
-				wg.Add(1)
 				std_interval := float64(1.0 / float64(Fps))
 				time_to_sleep := std_interval
 				s := time.Now()
-				defer wg.Done()
 				for {
 					if Done {
 						return
@@ -453,8 +442,6 @@ func main() {
 		}
 	} else if Mode == "sync-single-multi" {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
 			n := 0
 			first := true
 			std_interval := float64(1.0 / float64(Fps))
@@ -499,8 +486,6 @@ func main() {
 		for i := 0; i < Convert; i += 1 {
 			go func(id int) {
 				Log.Info(fmt.Sprintf("converter: %d", id))
-				wg.Add(1)
-				defer wg.Done()
 				for {
 					if Done {
 						return
@@ -517,8 +502,6 @@ func main() {
 		}
 	} else if Mode == "sync-multi-multi" {
 		go func() {
-			wg.Add(1)
-			defer wg.Done()
 			n_shot := 0
 			n_convert := 0
 			first_shot := true
@@ -570,8 +553,6 @@ func main() {
 		for i := 0; i < Shot; i += 1 {
 			go func(id int) {
 				Log.Info(fmt.Sprintf("shotter: %d", id))
-				wg.Add(1)
-				defer wg.Done()
 				for {
 					if Done {
 						return
@@ -588,8 +569,6 @@ func main() {
 		for i := 0; i < Convert; i += 1 {
 			go func(id int) {
 				Log.Info(fmt.Sprintf("converter: %d", id))
-				wg.Add(1)
-				defer wg.Done()
 				for {
 					if Done {
 						return
@@ -621,7 +600,7 @@ func main() {
 	Log.Info(fmt.Sprintf("Server will stop in 5 seconds ..."))
 	time.Sleep(5)
 	Log.Info(fmt.Sprintf("Waiting on workers"))
-	wg.Wait()
+
 	sl.Stop()
 	Log.Info(fmt.Sprintf("Waiting on server"))
 	swg.Wait()
