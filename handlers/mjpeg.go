@@ -13,12 +13,12 @@ import (
 )
 
 func MjpegHandler(w http.ResponseWriter, r *http.Request) {
-	Log.Debug(fmt.Sprintf("Start request %s", r.URL))
+	Log.Error(fmt.Sprintf("Start request %s", r.URL))
 
 	mimeWriter := multipart.NewWriter(w)
 	mimeWriter.SetBoundary("--boundary")
 
-	Log.Debug(fmt.Sprintf("Boundary: %s", mimeWriter.Boundary()))
+	Log.Error(fmt.Sprintf("Boundary: %s", mimeWriter.Boundary()))
 
 	contentType := fmt.Sprintf("multipart/x-mixed-replace;boundary=%s", mimeWriter.Boundary())
 	// contentType := fmt.Sprintf("multipart/x-mixed-replace;boundary=--boundary")
@@ -46,16 +46,16 @@ func MjpegHandler(w http.ResponseWriter, r *http.Request) {
 
 		partWriter, partErr := mimeWriter.CreatePart(partHeader)
 		if nil != partErr {
-			Log.Debug(fmt.Sprintf(partErr.Error()))
+			Log.Error(fmt.Sprintf(partErr.Error()))
 			break
 		}
 
 		snapshot := <-Images
 		if _, writeErr := partWriter.Write(snapshot.GetValueBytes()); nil != writeErr {
-			Log.Debug(fmt.Sprintf(writeErr.Error()))
+			Log.Error(fmt.Sprintf(writeErr.Error()))
 		}
 		n += 1
 	}
-
+	mimeWriter.Close()
 	Log.Debug(fmt.Sprintf("Success request"))
 }
