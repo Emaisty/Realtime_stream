@@ -265,7 +265,7 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 
 	var img *image.RGBA
 	if toSBS {
-		img = &image.RGBA{append(imageBytes, imageBytes...), 4 * width, image.Rect(0, 0, width*2, height)}
+		img = &image.RGBA{append(imageBytes, imageBytes...), 4 * width, image.Rect(0, 0, width*2-2, height-1)}
 	} else {
 		img = &image.RGBA{imageBytes, 4 * width, image.Rect(0, 0, width, height)}
 	}
@@ -276,7 +276,7 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 func CaptureWindowMust(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool) *image.RGBA {
 	img, err := CaptureWindow(pos, size, resize, toSBS, cursor)
 	for err != nil {
-		img, err = CaptureWindow(pos, size, resize, toSBS, cursor)
+		img = &image.RGBA{imageBytes, 4 * width, image.Rect(0, 0, width-1, height-1)}
 	}
 	return img
 }

@@ -2,10 +2,9 @@ package screenshot
 
 import (
 	"fmt"
-	"image"
-
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
+	"image"
 )
 
 type POS struct {
@@ -115,9 +114,9 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 
 	var img *image.RGBA
 	if toSBS {
-		img = &image.RGBA{append(data, data...), 4 * width, image.Rect(pos.X, pos.Y, width*2, height)}
+		img = &image.RGBA{append(data, data...), 4 * width, image.Rect(pos.X, pos.Y, width*2-2, height-1)}
 	} else {
-		img = &image.RGBA{data, 4 * width, image.Rect(pos.X, pos.Y, width, height)}
+		img = &image.RGBA{data, 4 * width, image.Rect(pos.X, pos.Y, width-1, height-1)}
 	}
 	return img, nil
 }
@@ -126,6 +125,7 @@ func CaptureWindowMust(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor 
 	img, err := CaptureWindow(pos, size, resize, toSBS, cursor)
 	for err != nil {
 		img, err = CaptureWindow(pos, size, resize, toSBS, cursor)
+		time.Sleep(10 * time.Millisecond)
 	}
 	return img
 }
