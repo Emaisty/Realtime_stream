@@ -54,6 +54,25 @@ var ToSBS bool = false
 var Cursor bool = false
 var FullScreen bool = true
 var Encoder *codec.H264Encoder
+var WindowId int64 = -1
+
+var configPath string
+var fullScreenArg FullScreenArg
+
+type FullScreenArg struct {
+	set   bool
+	value string
+}
+
+func (f *FullScreenArg) Set(x string) error {
+	f.value = x
+	f.set = true
+	return nil
+}
+
+func (f *FullScreenArg) String() string {
+	return f.value
+}
 
 func GetFirstAvc(width, height uint16) *flv.AVCVideoFrame {
 	avc := new(flv.AVCVideoFrame)
@@ -120,7 +139,8 @@ func CaptureScreenMustAvc(dts uint32) *flv.AVCVideoFrame {
 		ToSBS,
 		Cursor,
 		FullScreen,
-		int64(Convert))
+		int64(Convert),
+		WindowId)
 	var err error
 
 	tt := time.Now()
@@ -171,8 +191,6 @@ func CaptureScreenMustAvc(dts uint32) *flv.AVCVideoFrame {
 }
 
 func init() {
-	configPath := "./configuration.rtmp.yml"
-
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		fmt.Printf("Init Config (%s) error: (%s) does not exist!\n", configPath)
 		os.Exit(1)
@@ -243,7 +261,15 @@ func init() {
 		fmt.Printf(fmt.Sprintf("Get Config['full_screen'] error: %s\n", err))
 		os.Exit(1)
 	}
-	FullScreen = full_screen_tmp
+	if fullScreenArg.set {
+		if fullScreenArg.String() == "true" {
+			FullScreen = true
+		} else {
+			FullScreen = false
+		}
+	} else {
+		FullScreen = full_screen_tmp
+	}
 
 	left_tmp, err := Config.GetInt("left")
 	if err != nil {
@@ -337,6 +363,7 @@ func init() {
 	Log.Info(fmt.Sprintf("Server log level: %s", logLevel))
 	Log.Info(fmt.Sprintf("Server host: %s", ServerHost))
 	Log.Info(fmt.Sprintf("Server port: %s", ServerPort))
+	Log.Info(fmt.Sprintf("Server full_screen: %v", FullScreen))
 }
 
 func worker() {
@@ -346,7 +373,8 @@ func worker() {
 		ToSBS,
 		Cursor,
 		FullScreen,
-		int64(Convert))
+		int64(Convert),
+		WindowId)
 	var err error
 	Encoder, err = codec.NewH264Encoder(img.Rect.Dx(), img.Rect.Dy(), 0, Fps, 1, Fps, BitRate, image.YCbCrSubsampleRatio444, "bufsize,0k,0", "pixel_format,yuv444p,0")
 	if err != nil {
@@ -390,6 +418,13 @@ func worker() {
 }
 
 func main() {
+	flag.StringVar(&configPath, "config", "./configuration.rtmp.yml", "-config=./configuration.rtmp.yml")
+	flag.Var(&fullScreenArg, "full_screen", "-full_screen=true")
+	flag.Int64Var(&WindowId, "wid", -1, "-wid=2")
+
+	flag.Parse()
+	Init()
+
 	sigs := make(chan os.Signal, 1)
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -405,7 +440,6 @@ func main() {
 
 	var swg sync.WaitGroup
 
-	flag.Parse()
 	err := rtmp.ListenAndServe(fmt.Sprintf("%v:%v", ServerHost, ServerPort))
 	if err != nil {
 		panic(err)
