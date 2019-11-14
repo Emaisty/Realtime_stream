@@ -50,6 +50,7 @@ var Shot int
 var Convert int
 var Alpha int
 var Done bool = false
+var Broadcast bool = false
 
 func init() {
 	configPath := "./configuration.yml"
@@ -140,14 +141,21 @@ func init() {
 	}
 	Convert_Images_Size = int(convert_images_size_tmp)
 
-	handlers.InitBuf(Buffer_Queue_Size, Images_Queue_Size, Convert_Buffer_Size, Convert_Images_Size, Tasks_Queue_Size)
-
 	fps_tmp, err := Config.GetInt("fps")
 	if err != nil {
 		fmt.Printf(fmt.Sprintf("Get Config['fps'] error: %s\n", err))
 		os.Exit(1)
 	}
 	Fps = int(fps_tmp)
+
+	broadcast_tmp, err := Config.GetBool("broadcast")
+	if err != nil {
+		fmt.Printf(fmt.Sprintf("Get Config['broadcast'] error: %s\n", err))
+		os.Exit(1)
+	}
+	Broadcast = broadcast_tmp
+
+	handlers.InitBuf(Buffer_Queue_Size, Images_Queue_Size, Convert_Buffer_Size, Convert_Images_Size, Tasks_Queue_Size)
 
 	left_tmp, err := Config.GetInt("left")
 	if err != nil {
@@ -218,7 +226,7 @@ func init() {
 	}
 	Convert = int(convert_tmp)
 
-	handlers.InitCap(Left, Top, Width, Height, Quality)
+	handlers.InitCap(Left, Top, Width, Height, Quality, Fps, Alpha, Broadcast)
 
 	mode_tmp, err := Config.Get("mode")
 	if err != nil {

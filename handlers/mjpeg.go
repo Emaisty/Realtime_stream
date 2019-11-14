@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"stringio"
 	"time"
 )
 
@@ -50,7 +51,30 @@ func MjpegHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		snapshot := <-Images
+		var snapshot *stringio.StringIO
+
+		if Broadcast {
+			std_interval := float64(1.0 / float64(Fps))
+			time_to_sleep := std_interval
+			s := time.Now()
+			snapshot = GetImage()
+			ss := time.Now()
+			interval := ss.Sub(s)
+			if interval.Seconds() < std_interval {
+				time_to_sleep += float64(Alpha) * time_to_sleep / float64(100)
+			} else {
+				time_to_sleep -= float64(Alpha) * time_to_sleep / float64(100)
+			}
+			if time_to_sleep < float64(0) {
+				time_to_sleep = float64(0)
+			}
+			s = ss
+			sleep_time, _ := time.ParseDuration(fmt.Sprintf("%fs", time_to_sleep))
+			time.Sleep(sleep_time)
+		} else {
+			snapshot = <-Images
+		}
+
 		if _, writeErr := partWriter.Write(snapshot.GetValueBytes()); nil != writeErr {
 			Log.Debug(fmt.Sprintf(writeErr.Error()))
 		}

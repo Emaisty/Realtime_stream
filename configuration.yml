@@ -13,6 +13,9 @@ threads: 5
 
 fps: 30
 quality: 96
+
+broadcast: false
+
 left: 0
 top: 0
 width: 0
