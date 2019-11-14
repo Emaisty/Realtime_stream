@@ -6,6 +6,8 @@ package main
 
 import (
 	"fmt"
+	"go-gypsy/yaml"
+	"image/jpeg"
 	"net"
 	"net/http"
 	"os"
@@ -14,17 +16,16 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	"go-gypsy/yaml"
-	
-	"image/jpeg"
+
 	logger "ScreenStreamer/logger_seelog"
+	ljpeg "github.com/pixiv/go-libjpeg/jpeg"
 	"screenshot"
 	"seelog"
 	"stoppableListener"
 	"stringio"
 
-	"ScreenStreamer/handlers"
 	"ScreenStreamer/config"
+	"ScreenStreamer/handlers"
 )
 
 var Log seelog.LoggerInterface
@@ -291,7 +292,7 @@ func main() {
 					&screenshot.SIZE{Width, Height},
 					&screenshot.RESIZE{ResizeWidth, ResizeHeight})
 				sio := stringio.New()
-				err = jpeg.Encode(sio, img, &jpeg.Options{Quality})
+				err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 				if err == nil {
 					sio.Seek(0, 0)
 					handlers.Images <- sio
@@ -353,7 +354,7 @@ func main() {
 				}
 				img := <-handlers.Buffer
 				sio := stringio.New()
-				err := jpeg.Encode(sio, img, &jpeg.Options{Quality})
+				err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 				if err == nil {
 					sio.Seek(0, 0)
 					handlers.Images <- sio
@@ -403,7 +404,7 @@ func main() {
 					}
 					img := <-handlers.Buffer
 					sio := stringio.New()
-					err := jpeg.Encode(sio, img, &jpeg.Options{Quality})
+					err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 					if err == nil {
 						sio.Seek(0, 0)
 						handlers.Images <- sio
@@ -428,7 +429,7 @@ func main() {
 						&screenshot.SIZE{Width, Height},
 						&screenshot.RESIZE{ResizeWidth, ResizeHeight})
 					sio := stringio.New()
-					err := jpeg.Encode(sio, img, &jpeg.Options{Quality})
+					err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 					if err == nil {
 						sio.Seek(0, 0)
 						handlers.Images <- sio
@@ -506,7 +507,7 @@ func main() {
 					}
 					img := <-handlers.BufferArray[id]
 					sio := stringio.New()
-					err = jpeg.Encode(sio, img, &jpeg.Options{Quality})
+					err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 					if err == nil {
 						sio.Seek(0, 0)
 						handlers.ImagesArray[id] <- sio
@@ -595,7 +596,7 @@ func main() {
 					}
 					img := <-handlers.BufferArray[id]
 					sio := stringio.New()
-					err = jpeg.Encode(sio, img, &jpeg.Options{Quality})
+					err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 					if err == nil {
 						sio.Seek(0, 0)
 						handlers.ImagesArray[id] <- sio
