@@ -18,7 +18,6 @@ import (
 
 	logger "ScreenStreamer/logger_seelog"
 	ljpeg "github.com/pixiv/go-libjpeg/jpeg"
-
 	"screenshot"
 	"seelog"
 	"stoppableListener"
@@ -51,6 +50,7 @@ var Shot int
 var Convert int
 var Alpha int
 var Done bool = false
+var ToSBS bool = false
 
 func init() {
 	configPath := "./configuration.yml"
@@ -192,6 +192,13 @@ func init() {
 	}
 	ResizeHeight = int(resize_height_tmp)
 
+	to_sbs_tmp, err := Config.GetBool("to_sbs")
+	if err != nil {
+		fmt.Printf(fmt.Sprintf("Get Config['to_sbs'] error: %s\n", err))
+		os.Exit(1)
+	}
+	ToSBS = to_sbs_tmp
+
 	shot_tmp, err := Config.GetInt("shot")
 	if err != nil {
 		fmt.Printf(fmt.Sprintf("Get Config['shot'] error: %s\n", err))
@@ -278,7 +285,6 @@ func main() {
 
 	if Mode == "single" {
 		go func() {
-
 			std_interval := float64(1.0 / float64(Fps))
 			time_to_sleep := std_interval
 			s := time.Now()
@@ -288,7 +294,8 @@ func main() {
 				}
 				img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 					&screenshot.SIZE{Width, Height},
-					&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+					&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+					ToSBS)
 				sio := stringio.New()
 				err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 				if err == nil {
@@ -322,7 +329,8 @@ func main() {
 				}
 				img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 					&screenshot.SIZE{Width, Height},
-					&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+					&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+					ToSBS)
 				handlers.Buffer <- img
 				ss := time.Now()
 				interval := ss.Sub(s)
@@ -349,7 +357,6 @@ func main() {
 				img := <-handlers.Buffer
 				sio := stringio.New()
 				err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
-
 				if err == nil {
 					sio.Seek(0, 0)
 					handlers.Images <- sio
@@ -367,7 +374,8 @@ func main() {
 				}
 				img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 					&screenshot.SIZE{Width, Height},
-					&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+					&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+					ToSBS)
 				handlers.Buffer <- img
 				ss := time.Now()
 				interval := ss.Sub(s)
@@ -416,7 +424,8 @@ func main() {
 					}
 					img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 						&screenshot.SIZE{Width, Height},
-						&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+						&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+						ToSBS)
 					sio := stringio.New()
 					err = ljpeg.Encode(sio, img, &ljpeg.EncoderOptions{Quality: Quality})
 					if err == nil {
@@ -459,7 +468,8 @@ func main() {
 				}
 				img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 					&screenshot.SIZE{Width, Height},
-					&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+					&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+					ToSBS)
 				handlers.BufferArray[n] <- img
 				if !first {
 					sio := <-handlers.ImagesArray[n]
@@ -560,7 +570,8 @@ func main() {
 					convert_id := <-handlers.TasksArray[id]
 					img := screenshot.CaptureWindowMust(&screenshot.POS{Left, Top},
 						&screenshot.SIZE{Width, Height},
-						&screenshot.RESIZE{ResizeWidth, ResizeHeight})
+						&screenshot.RESIZE{ResizeWidth, ResizeHeight},
+						ToSBS)
 					handlers.BufferArray[convert_id] <- img
 				}
 			}(i)
@@ -599,8 +610,6 @@ func main() {
 	Log.Info(fmt.Sprintf("Stopping server"))
 	Log.Info(fmt.Sprintf("Server will stop in 5 seconds ..."))
 	time.Sleep(5)
-	Log.Info(fmt.Sprintf("Waiting on workers"))
-
 	sl.Stop()
 	Log.Info(fmt.Sprintf("Waiting on server"))
 	swg.Wait()
