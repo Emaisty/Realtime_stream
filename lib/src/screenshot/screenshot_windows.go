@@ -64,7 +64,7 @@ func CaptureWindowMust(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor 
 func CaptureScreenYCbCrMust(pos *POS, size *SIZE, resize *RESIZE, toSBS, cursor, fullScreen bool, numOfRange, windowId int64) *image.YCbCr {
 	img, err := CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange, windowId)
 	for err != nil {
-		img, err = CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange)
+		img, err = CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange, windowId)
 		time.Sleep(10 * time.Millisecond)
 	}
 	return img
@@ -216,14 +216,14 @@ func CaptureRectYCbCr444(rect image.Rectangle, numOfRange int64) (*image.YCbCr, 
 	lenData := int64(len(slice))
 	batchSize := lenData / (4 * numOfRange) * 4
 	for i := int64(0); i < numOfRange-1; i++ {
-		Range <- []int64{i * batchSize, batchSize}
+		Range <- []int64{i * batchSize, batchSize, int64(ImageCache.Rect.Dx()), int64(ImageCache.Rect.Dx())}
 		Data <- slice
 		Y <- ImageCache.Y
 		Cb <- ImageCache.Cb
 		Cr <- ImageCache.Cr
 	}
 	start := (numOfRange - 1) * batchSize
-	Range <- []int64{start, lenData - start}
+	Range <- []int64{start, lenData - start, int64(ImageCache.Rect.Dx()), int64(ImageCache.Rect.Dx())}
 	Data <- slice
 	Y <- ImageCache.Y
 	Cb <- ImageCache.Cb

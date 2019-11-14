@@ -113,41 +113,41 @@ static void ImageRGBToYCbCr4442(unsigned char *data, int32_t length, unsigned ch
 }
 
 static void ImageRGBToYCbCr4443(unsigned char *data, int32_t length, int32_t width, int32_t image_width, unsigned char *y, unsigned char *cb, unsigned char *cr) {
- 	int32_t n = 0;
- 	int32_t w = 0;
- 	int32_t f = 0;
- 	int32_t jwidth = 0;
- 	if (width == image_width) {
- 		for (int32_t i = 0; i < length; i += 4) {
- 			RGBToYCbCr5(data[i+2], data[i+1], data[i], &y[n], &cb[n], &cr[n]);
- 			n += 1;
- 		}
- 	} else {
- 		for (int32_t i = 0; i < length; i += 4) {
- 			if (w == width) {
- 				f = n - width - 1;
- 				for (int32_t j = n; j > f; j--) {
- 					jwidth = j + width;
- 					y[jwidth] = y[j];
- 					cb[jwidth] = cb[j];
- 					cr[jwidth] = cr[j];
- 				}
- 				n += width;
- 				w = 0;
- 			}
- 			RGBToYCbCr5(data[i+2], data[i+1], data[i], &y[n], &cb[n], &cr[n]);
- 			n += 1;
- 			w += 1;
- 		}
- 		f = n - width - 1;
- 		for (int32_t j = n; j > f; j--) {
- 			jwidth = j + width;
- 			y[jwidth] = y[j];
- 			cb[jwidth] = cb[j];
- 			cr[jwidth] = cr[j];
- 		}
- 	}
- }
+	int32_t n = 0;
+	int32_t w = 0;
+	int32_t f = 0;
+	int32_t jwidth = 0;
+	if (width == image_width) {
+		for (int32_t i = 0; i < length; i += 4) {
+			RGBToYCbCr5(data[i+2], data[i+1], data[i], &y[n], &cb[n], &cr[n]);
+			n += 1;
+		}
+	} else {
+		for (int32_t i = 0; i < length; i += 4) {
+			if (w == width) {
+				f = n - width - 1;
+				for (int32_t j = n; j > f; j--) {
+					jwidth = j + width;
+					y[jwidth] = y[j];
+					cb[jwidth] = cb[j];
+					cr[jwidth] = cr[j];
+				}
+				n += width;
+				w = 0;
+			}
+			RGBToYCbCr5(data[i+2], data[i+1], data[i], &y[n], &cb[n], &cr[n]);
+			n += 1;
+			w += 1;
+		}
+		f = n - width - 1;
+		for (int32_t j = n; j > f; j--) {
+			jwidth = j + width;
+			y[jwidth] = y[j];
+			cb[jwidth] = cb[j];
+			cr[jwidth] = cr[j];
+		}
+	}
+}
 
 static void ImageRGBToY444(unsigned char *data, int32_t length, unsigned char *y) {
 	int32_t n = 0;
@@ -185,9 +185,28 @@ static void ImageToRGBAWindows(unsigned char *data, int32_t length, unsigned cha
 static void ImageToRGBALinux(unsigned char *data, int32_t length) {
 	unsigned char t;
 	for (int32_t i = 0; i < length; i += 4) {
+		t = data[i];
 		data[i] = data[i+2];
-		data[i+2] = data[i];
+		data[i+2] = t;
 		data[i+3] = 255;
+	}
+}
+
+static void ImageToRGBASBSLinux(unsigned char *data, unsigned char *sbs, int32_t width,  int32_t height) {
+	int32_t t, u, v = width*4;
+	for (int32_t i = 0; i < height; i += 1) {
+		for (int32_t j = 0; j < v; j += 4) {
+			t = i*v;
+			u = 2*t;
+			sbs[u+j] = data[t+j+2];
+			sbs[u+j+1] = data[t+j+1];
+			sbs[u+j+2] = data[t+j];
+			sbs[u+j+3] = 255;
+			sbs[u+j+v] = data[t+j+2];
+			sbs[u+j+1+v] = data[t+j+1];
+			sbs[u+j+2+v] = data[t+j];
+			sbs[u+j+3+v] = 255;
+		}
 	}
 }
 */
@@ -315,6 +334,13 @@ func ConverterYCbCr() {
 func ImageToRGBALinux(data []byte) {
 	C.ImageToRGBALinux((*C.uchar)(unsafe.Pointer(&data[0])),
 		C.int32_t(len(data)))
+}
+
+func ImageToRGBASBSLinux(data []byte, sbs []byte, width, height int) {
+	C.ImageToRGBASBSLinux((*C.uchar)(unsafe.Pointer(&data[0])),
+		(*C.uchar)(unsafe.Pointer(&sbs[0])),
+		C.int32_t(width),
+		C.int32_t(height))
 }
 
 func ImageToRGBAWindows(data, bytes []byte) {

@@ -74,7 +74,7 @@ func CaptureWindowMust(pos *screenshot.POS, size *screenshot.SIZE, resize *scree
 	return img
 }
 
-func init() {
+func Init() {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		fmt.Printf("Init Config (%s) error: (%s) does not exist!\n", configPath)
 		os.Exit(1)
@@ -304,10 +304,14 @@ func main() {
 		panic(err)
 	}
 
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/jpeg", handlers.JpegHandler)
 	http.HandleFunc("/jpeg/", handlers.JpegHandler)
 	http.HandleFunc("/mjpeg", handlers.MjpegHandler)
 	http.HandleFunc("/mjpeg/", handlers.MjpegHandler)
+	http.HandleFunc("/mjpeg/viewer", handlers.MjpegViewerHandler)
+	http.HandleFunc("/mjpeg/viewer/", handlers.MjpegViewerHandler)
 	http.HandleFunc("/stop", handlers.StopHandler)
 	http.HandleFunc("/stop/", handlers.StopHandler)
 

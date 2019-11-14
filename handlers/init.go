@@ -5,9 +5,9 @@
 package handlers
 
 import (
-	logger "ScreenStreamer/logger_seelog"
 	"fmt"
 	"image"
+	logger "ScreenStreamer/logger_seelog"
 	"seelog"
 	"stringio"
 )
@@ -44,12 +44,12 @@ func InitLog() {
 
 func GetImage() *stringio.StringIO {
 	select {
-	case snapshot := <-Images:
-		ImageBuffer = snapshot
+    case snapshot := <-Images:
+        ImageBuffer = snapshot
 		return ImageBuffer
-	default:
+    default:
 		return ImageBuffer
-	}
+    }
 }
 
 func InitBuf(b_size, i_size, cb_size, ci_size, ct_size int) {

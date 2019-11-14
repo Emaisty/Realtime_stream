@@ -82,7 +82,7 @@ func CaptureWindowMust(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor 
 func CaptureScreenYCbCrMust(pos *POS, size *SIZE, resize *RESIZE, toSBS, cursor, fullScreen bool, numOfRange, windowId int64) *image.YCbCr {
 	img, err := CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange, windowId)
 	for err != nil {
-		img, err = CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange)
+		img, err = CaptureScreenYCbCr444(pos, size, resize, toSBS, cursor, fullScreen, numOfRange, windowId)
 		time.Sleep(10 * time.Millisecond)
 	}
 	return img
@@ -161,14 +161,14 @@ func CaptureRectYCbCr444(rect image.Rectangle, numOfRange int64) (*image.YCbCr, 
 	lenData := int64(len(data))
 	batchSize := lenData / (4 * numOfRange) * 4
 	for i := int64(0); i < numOfRange-1; i++ {
-		Range <- []int64{i * batchSize, batchSize}
+		Range <- []int64{i * batchSize, batchSize, int64(ImageCache.Rect.Dx()), int64(ImageCache.Rect.Dx())}
 		Data <- data
 		Y <- ImageCache.Y
 		Cb <- ImageCache.Cb
 		Cr <- ImageCache.Cr
 	}
 	start := (numOfRange - 1) * batchSize
-	Range <- []int64{start, lenData - start}
+	Range <- []int64{start, lenData - start, int64(ImageCache.Rect.Dx()), int64(ImageCache.Rect.Dx())}
 	Data <- data
 	Y <- ImageCache.Y
 	Cb <- ImageCache.Cb
@@ -197,6 +197,7 @@ func CaptureWindowYCbCr(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor
 	if err != nil {
 		return nil, fmt.Errorf("error occurred, when xproto.GetProperty 0 err:%v.\n", err)
 	}
+
 	var winId xproto.Window
 	if windowId != -1 {
 		winId = xproto.Window(windowId)
@@ -292,13 +293,15 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 	}
 
 	data := xImg.Data
-	ImageToRGBALinux(data)
 
 	var img *image.RGBA
 	if toSBS {
-		img = &image.RGBA{append(data, data...), 4 * width, image.Rect(pos.X, pos.Y, width*2-2, height-1)}
+		data2 := make([]byte, len(data)*2)
+		ImageToRGBASBSLinux(data, data2, width, height)
+		img = &image.RGBA{data2, 8 * width, image.Rect(pos.X, pos.Y, width*2, height)}
 	} else {
-		img = &image.RGBA{data, 4 * width, image.Rect(pos.X, pos.Y, width-1, height-1)}
+		ImageToRGBALinux(data)
+		img = &image.RGBA{data, 4 * width, image.Rect(pos.X, pos.Y, width, height)}
 	}
 	return img, nil
 }
