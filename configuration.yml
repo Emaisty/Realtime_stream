@@ -16,11 +16,10 @@ threads: 5
 fps: 30
 # target jpeg quality
 quality: 96
-# screenshot image
-# left offset, 0 is default
-# top offset, 0 is default
-# width, 0 is default, means auto
-# height, 0 is default, means auto
+
+
+broadcast: false
+
 left: 0
 top: 0
 width: 0
