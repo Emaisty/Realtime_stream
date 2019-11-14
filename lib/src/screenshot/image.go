@@ -28,6 +28,17 @@ func CRGBToYCbCr444Windows(data, y, cb, cr []byte) {
 		(*C.uchar)(unsafe.Pointer(&cr[0])))
 }
 
+func ImageToRGBALinux(data []byte) {
+	C.ImageToRGBALinux((*C.uchar)(unsafe.Pointer(&data[0])),
+		C.int32_t(len(data)))
+}
+
+func ImageToRGBAWindows(data, bytes []byte) {
+	C.ImageToRGBAWindows((*C.uchar)(unsafe.Pointer(&data[0])),
+		C.int32_t(len(data)),
+		(*C.uchar)(unsafe.Pointer(&bytes[0])))
+}
+
 func RGBAToYCbCr444(img *image.RGBA) *image.YCbCr {
 	new_img := image.NewYCbCr(img.Rect, image.YCbCrSubsampleRatio444)
 	new_img.Y = make([]uint8, len(img.Pix)/4)
