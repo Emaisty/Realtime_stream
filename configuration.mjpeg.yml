@@ -16,10 +16,13 @@ threads: 5
 fps: 30
 # target jpeg quality
 quality: 96
-
-
+# broadcast,true for broadcast, false for point to point
 broadcast: false
-
+# screenshot image
+# left offset, 0 is default
+# top offset, 0 is default
+# width, 0 is default, means auto
+# height, 0 is default, means auto
 left: 0
 top: 0
 width: 0
@@ -37,8 +40,7 @@ convert_images_size: 1
 
 # to_sbs, convert 2d image to side-by-side images
 to_sbs: false
-
-
+# cursor, capture cursor or not
 cursor: false
 
 # how many screen shoters to work, less than 10
@@ -56,3 +58,5 @@ convert: 3
 # sync-single-multi, a shoter and multi converters, shoter and converters works synchronizely
 # sync-multi-multi, multi shoters and multi converters, shoters and converters works synchronizely
 mode: sync-single-multi
+
+# fps 22 quality 95 - 100 1600 * 900 threads 5 convert 4

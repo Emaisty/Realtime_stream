@@ -5,6 +5,7 @@ import (
 	"image"
 	"log"
 	"reflect"
+	"time"
 	"unsafe"
 	"w32"
 )
@@ -202,6 +203,8 @@ func CaptureRectYCbCr444(rect image.Rectangle, numOfRange int64) (*image.YCbCr, 
 	}
 	ttt := time.Now()
 
+	// CRGBToYCbCr444(slice, ImageCache.Y, ImageCache.Cb, ImageCache.Cr)
+
 	lenData := int64(len(slice))
 	batchSize := lenData / (4 * numOfRange) * 4
 	for i := int64(0); i < numOfRange-1; i++ {
@@ -377,10 +380,11 @@ func CaptureWindowYCbCr(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor
 	hdrp.Len = width * height * 4
 	hdrp.Cap = width * height * 4
 
-	if ImageCache == nil {
+	if ImageCache == nil || (ImageCache.Rect.Dx() != width || ImageCache.Rect.Dy() != height) {
 		ImageCache = image.NewYCbCr(image.Rect(0, 0, width, height), image.YCbCrSubsampleRatio444)
 	}
 
+	// CRGBToYCbCr444(slice, ImageCache.Y, ImageCache.Cb, ImageCache.Cr)
 	// Shot: 15.510277ms, Create: 2.024195ms, Convert: 25.398941ms
 
 	lenData := int64(len(slice))
@@ -455,6 +459,8 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 	}
 	defer w32.DeleteObject(obj)
 
+	//Note:BitBlt contains bad error handling, we will just assume it works and if it doesn't it will panic :x
+	w32.BitBlt(m_hDC, 0, 0, width, height, hDC, pos.X, pos.Y, w32.SRCCOPY)
 	if cursor {
 		CursorInfo := new(w32.CURSORINFO)
 		_ = w32.GetCursorInfo(CursorInfo)
@@ -468,9 +474,6 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 		}
 	}
 
-	//Note:BitBlt contains bad error handling, we will just assume it works and if it doesn't it will panic :x
-	w32.BitBlt(m_hDC, 0, 0, width, height, hDC, pos.X, pos.Y, w32.SRCCOPY)
-
 	var slice []byte
 	hdrp := (*reflect.SliceHeader)(unsafe.Pointer(&slice))
 	hdrp.Data = uintptr(ptr)
@@ -478,14 +481,13 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 	hdrp.Cap = width * height * 4
 
 	imageBytes := make([]byte, len(slice))
-
 	ImageToRGBAWindows(slice, imageBytes)
 
 	var img *image.RGBA
 	if toSBS {
 		img = &image.RGBA{append(imageBytes, imageBytes...), 4 * width, image.Rect(0, 0, width*2-2, height-1)}
 	} else {
-		img = &image.RGBA{imageBytes, 4 * width, image.Rect(0, 0, width, height)}
+		img = &image.RGBA{imageBytes, 4 * width, image.Rect(0, 0, width-1, height-1)}
 	}
 
 	return img, nil

@@ -1,5 +1,158 @@
 package screenshot
 
+/*
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+
+struct YCbCr {
+	unsigned char Y;
+	unsigned char Cb;
+	unsigned char Cr;
+};
+
+struct YCbCr RGBToYCbCr(unsigned char r, unsigned char g, unsigned char b) {
+	float fr = (float)r / 255;
+	float fg = (float)g / 255;
+	float fb = (float)b / 255;
+
+	struct YCbCr ycbcr;
+	ycbcr.Y = (unsigned char)((0.2990 * fr + 0.5870 * fg + 0.1140 * fb) * 255);
+	ycbcr.Cb = (unsigned char)((-0.1687 * fr - 0.3313 * fg + 0.5000 * fb) * 255 + 128);
+	ycbcr.Cr = (unsigned char)((0.5000 * fr - 0.4187 * fg - 0.0813 * fb) * 255 + 128);
+
+	return ycbcr;
+}
+
+struct YCbCr RGBToYCbCr4(unsigned char r, unsigned char g, unsigned char b) {
+	struct YCbCr ycbcr;
+	ycbcr.Y = (unsigned char)((19595 * r + 38470 * g + 7471 * b) >> 16);
+	ycbcr.Cb = (unsigned char)(((-11056 * r - 21712 * g + 32768 * b) >> 16) + 128);
+	ycbcr.Cr = (unsigned char)(((32768 * r - 27440 * g - 5328 * b) >> 16) + 128);
+
+	return ycbcr;
+}
+
+static void RGBToYCbCr5(unsigned char r, unsigned char g, unsigned char b, unsigned char *y, unsigned char *cb, unsigned char *cr) {
+	*y = (unsigned char)((19595 * r + 38470 * g + 7471 * b) >> 16);
+	*cb = (unsigned char)(((-11056 * r - 21712 * g + 32768 * b) >> 16) + 128);
+	*cr = (unsigned char)(((32768 * r - 27440 * g - 5328 * b) >> 16) + 128);
+}
+
+static void RGBToY(unsigned char r, unsigned char g, unsigned char b, unsigned char *y) {
+	*y = (unsigned char)((19595 * r + 38470 * g + 7471 * b) >> 16);
+}
+
+static void RGBToCb(unsigned char r, unsigned char g, unsigned char b, unsigned char *cb) {
+	*cb = (unsigned char)(((-11056 * r - 21712 * g + 32768 * b) >> 16) + 128);
+}
+
+static void RGBToCr(unsigned char r, unsigned char g, unsigned char b, unsigned char *cr) {
+	*cr = (unsigned char)(((32768 * r - 27440 * g - 5328 * b) >> 16) + 128);
+}
+
+struct YCbCr RGBToYCbCr3(unsigned char r, unsigned char g, unsigned char b) {
+	struct YCbCr ycbcr;
+	ycbcr.Y = (unsigned char)((2990 * r + 5870 * g + 1140 * b) / 10000);
+	ycbcr.Cb = (unsigned char)((-1687 * r - 3313 * g + 5000 * b) / 10000  + 128);
+	ycbcr.Cr = (unsigned char)((5000 * r - 4187 * g - 813 * b) / 10000  + 128);
+
+	return ycbcr;
+}
+
+static struct YCbCr RGBToYCbCr2(unsigned char r, unsigned char g, unsigned char b) {
+	float fr = (float)r / 255;
+	float fg = (float)g / 255;
+	float fb = (float)b / 255;
+
+	struct YCbCr ycbcr;
+	int Y = (int)((0.2990 * fr + 0.5870 * fg + 0.1140 * fb) * 255);
+	int Cb = (int)((-0.1687 * fr - 0.3313 * fg + 0.5000 * fb) * 255 + 128);
+	int Cr = (int)((0.5000 * fr - 0.4187 * fg - 0.0813 * fb) * 255 + 128);
+	if (Y < 0) {
+		Y = 0;
+	} else if (Y > 0xff) {
+		Y = 0xff;
+	}
+	if (Cb < 0) {
+		Cb = 0;
+	} else if (Cb > 0xff) {
+		Cb = 0xff;
+	}
+	if (Cr < 0) {
+		Cr = 0;
+	} else if (Cr > 0xff) {
+		Cr = 0xff;
+	}
+	ycbcr.Y = (unsigned char)(Y);
+	ycbcr.Cb = (unsigned char)(Cb);
+	ycbcr.Cr = (unsigned char)(Cr);
+
+	return ycbcr;
+}
+
+static void ImageRGBToYCbCr444(unsigned char *data, int32_t length, unsigned char *y, unsigned char *cb, unsigned char *cr) {
+	int32_t n = 0;
+	struct YCbCr ycbcr;
+	for (int32_t i = 0; i < length; i += 4) {
+		ycbcr = RGBToYCbCr4(data[i+2], data[i+1], data[i]);
+		y[n] = ycbcr.Y;
+		cb[n] = ycbcr.Cb;
+		cr[n] = ycbcr.Cr;
+		n += 1;
+	}
+}
+
+static void ImageRGBToYCbCr4442(unsigned char *data, int32_t length, unsigned char *y, unsigned char *cb, unsigned char *cr) {
+	int32_t n = 0;
+	for (int32_t i = 0; i < length; i += 4) {
+		RGBToYCbCr5(data[i+2], data[i+1], data[i], &y[n], &cb[n], &cr[n]);
+		n += 1;
+	}
+}
+
+static void ImageRGBToY444(unsigned char *data, int32_t length, unsigned char *y) {
+	int32_t n = 0;
+	for (int32_t i = 0; i < length; i += 4) {
+		RGBToY(data[i+2], data[i+1], data[i], &y[n]);
+		n += 1;
+	}
+}
+
+static void ImageRGBToCb444(unsigned char *data, int32_t length, unsigned char *cb) {
+	int32_t n = 0;
+	for (int32_t i = 0; i < length; i += 4) {
+		RGBToCb(data[i+2], data[i+1], data[i], &cb[n]);
+		n += 1;
+	}
+}
+
+static void ImageRGBToCr444(unsigned char *data, int32_t length, unsigned char *cr) {
+	int32_t n = 0;
+	for (int32_t i = 0; i < length; i += 4) {
+		RGBToCr(data[i+2], data[i+1], data[i], &cr[n]);
+		n += 1;
+	}
+}
+
+static void ImageToRGBAWindows(unsigned char *data, int32_t length, unsigned char *bytes) {
+	for (int32_t i = 0; i < length; i += 4) {
+		bytes[i] = data[i+2];
+		bytes[i+2] = data[i];
+		bytes[i+1] = data[i+1];
+		bytes[i+3] = data[i+3];
+	}
+}
+
+static void ImageToRGBALinux(unsigned char *data, int32_t length) {
+	for (int32_t i = 0; i < length; i += 4) {
+		data[i] = data[i+2];
+		data[i+2] = data[i];
+		data[i+3] = 255;
+	}
+}
+*/
 import "C"
 import (
 	"image"
@@ -8,7 +161,6 @@ import (
 )
 
 var ImageCache *image.YCbCr
-
 var Data chan []byte
 var Y chan []byte
 var Cb chan []byte

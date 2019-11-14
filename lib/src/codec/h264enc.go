@@ -84,9 +84,7 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
-
-	//"fmt"
+	// "fmt"
 	"image"
 	"strings"
 	"unsafe"
@@ -128,7 +126,7 @@ func NewH264Encoder(
 	m.m.h = (C.int)(h)
 	m.W = w
 	m.H = h
-	m.m.bitrate = 1024 * 1024 * (C.int)(bit_rate)
+	m.m.bitrate = 1024 * 1024 * (C.int)(bit_rate) // 1024 * 1024 * 64 // 1024 * 1024 * 128 // 1024 * 1024 * 256 // 1024 * 1024 * 512
 	m.m.gop_size = (C.int)(gop_size)
 	m.m.sample_rate = (C.int)(sample_rate)
 	m.m.time_base_num = (C.int)(time_base_num)
@@ -152,7 +150,7 @@ func NewH264Encoder(
 			m.m.profile = C.CString(a[1])
 		}
 	}
-	//fmt.Printf("\n>>>>>> m.m.pixfmt: %v\n", m.m.pixfmt)
+	// fmt.Printf("\n>>>>>> m.m.pixfmt: %v\n", m.m.pixfmt)
 	r := C.h264enc_new(&m.m)
 	if int(r) < 0 {
 		err = errors.New("open encoder failed")

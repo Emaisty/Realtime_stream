@@ -2,10 +2,13 @@ package screenshot
 
 import (
 	"fmt"
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/xproto"
 	"image"
 	"time"
+
+	"log"
+
+	"github.com/BurntSushi/xgb"
+	"github.com/BurntSushi/xgb/xproto"
 )
 
 var Conn *xgb.Conn
@@ -106,7 +109,7 @@ func CaptureRect(rect image.Rectangle) (*image.RGBA, error) {
 	return img, nil
 }
 
-func CaptureRectYCbCr444(rect image.Rectangle) (*image.YCbCr, error) {
+func CaptureRectYCbCr444(rect image.Rectangle, numOfRange int64) (*image.YCbCr, error) {
 	c := Conn
 
 	t := time.Now()
@@ -118,13 +121,24 @@ func CaptureRectYCbCr444(rect image.Rectangle) (*image.YCbCr, error) {
 	}
 
 	data := xImg.Data
-	dataLen := len(data)
 
 	tt := time.Now()
 	if ImageCache == nil {
 		ImageCache = image.NewYCbCr(image.Rect(0, 0, x, y), image.YCbCrSubsampleRatio444)
 	}
 	ttt := time.Now()
+
+	// CRGBToYCbCr444(data, ImageCache.Y, ImageCache.Cb, ImageCache.Cr)
+
+	// Data <- data
+	// Data <- data
+	// Data <- data
+	// Y <- ImageCache.Y
+	// Cb <- ImageCache.Cb
+	// Cr <- ImageCache.Cr
+	// <-RY
+	// <-RCb
+	// <-RCr
 
 	lenData := int64(len(data))
 	batchSize := lenData / (4 * numOfRange) * 4
@@ -190,6 +204,7 @@ func CaptureWindowYCbCr(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor
 		ImageCache = image.NewYCbCr(image.Rect(pos.X, pos.Y, width, height), image.YCbCrSubsampleRatio444)
 	}
 
+	// CRGBToYCbCr444(data, ImageCache.Y, ImageCache.Cb, ImageCache.Cr)
 	// Shot: 14.734765ms, Create: 108ns, Convert: 9.515677ms
 
 	lenData := int64(len(data))
@@ -215,9 +230,7 @@ func CaptureWindowYCbCr(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor
 }
 
 func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool) (*image.RGBA, error) {
-
 	c := Conn
-
 	screen := xproto.Setup(c).DefaultScreen(c)
 
 	aname := "_NET_ACTIVE_WINDOW"
@@ -251,6 +264,7 @@ func CaptureWindow(pos *POS, size *SIZE, resize *RESIZE, toSBS bool, cursor bool
 
 	data := xImg.Data
 	ImageToRGBALinux(data)
+
 	var img *image.RGBA
 	if toSBS {
 		img = &image.RGBA{append(data, data...), 4 * width, image.Rect(pos.X, pos.Y, width*2-2, height-1)}

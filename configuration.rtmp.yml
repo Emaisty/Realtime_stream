@@ -18,22 +18,21 @@ fps: 30
 # bit_rate, default is 64M
 bit_rate: 64
 
-  # full_screen, default is true
-  full_screen: true
+# full_screen, default is true
+full_screen: true
 
-  # screenshot image
-  # left offset, 0 is default
-  # top offset, 0 is default
-  # width, 0 is default, means auto
-  # height, 0 is default, means auto
-  left: 0
-  top: 0
-  width: 0
-  height: 0
-  # resize function is not work now, so ignore this two options
-  resize_width: 0
-  resize_height: 0
-
+# screenshot image
+# left offset, 0 is default
+# top offset, 0 is default
+# width, 0 is default, means auto
+# height, 0 is default, means auto
+left: 0
+top: 0
+width: 0
+height: 0
+# resize function is not work now, so ignore this two options
+resize_width: 0
+resize_height: 0
 
 # don't change this options, if you don't know how it works
 buffer_queue_size: 0
@@ -46,10 +45,8 @@ cursor: false
 # alpha is an option to make the fps stable
 # every frame sleep +/- (alpha / 100) * (1 / fps) senonds
 alpha: 15
-
+# how many YCbCr converter to work for one image
 convert: 4
 # the application work mode
 # single, just a worker with shoter & converter functions
 mode: single
-
-# fps 22 quality 95 - 100 1600 * 900 threads 5 convert 4

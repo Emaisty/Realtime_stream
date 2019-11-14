@@ -77,6 +77,7 @@ func GetFirstAvc(width, height uint16) *flv.AVCVideoFrame {
 	i := strings.Index(headerS, "0000000167")
 	if i != -1 {
 		spsTmp := Encoder.Header[i/2+4:]
+		spsTmpS := fmt.Sprintf("%X", spsTmp)
 		j := strings.Index(spsTmpS, "0000000168")
 		if j != -1 {
 			sps := spsTmp[:j/2]
@@ -129,6 +130,7 @@ func CaptureScreenMustAvc(dts uint32) *flv.AVCVideoFrame {
 		avc := GetFirstAvc(uint16(img.Rect.Dx()), uint16(img.Rect.Dy()))
 		return avc
 	}
+
 	tt := time.Now()
 	data, err := Encoder.Encode(img)
 	if err != nil {
@@ -358,6 +360,7 @@ func worker() {
 	if err != nil {
 		panic(err)
 	}
+
 	std_interval := float64(1.0 / float64(Fps))
 	time_to_sleep := std_interval
 	s := time.Now()
@@ -405,8 +408,10 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	screenshot.InitConn()
-
 	screenshot.InitChannels(Convert)
+	// go screenshot.ConverterY()
+	// go screenshot.ConverterCb()
+	// go screenshot.ConverterCr()
 	for i := 0; i < Convert; i++ {
 		go screenshot.ConverterYCbCr()
 	}
