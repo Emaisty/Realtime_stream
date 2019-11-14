@@ -146,6 +146,7 @@ static void ImageToRGBAWindows(unsigned char *data, int32_t length, unsigned cha
 }
 
 static void ImageToRGBALinux(unsigned char *data, int32_t length) {
+	unsigned char t;
 	for (int32_t i = 0; i < length; i += 4) {
 		data[i] = data[i+2];
 		data[i+2] = data[i];
