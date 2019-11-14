@@ -46,6 +46,8 @@ cursor: false
 # alpha is an option to make the fps stable
 # every frame sleep +/- (alpha / 100) * (1 / fps) senonds
 alpha: 15
+
+convert: 4
 # the application work mode
 # single, just a worker with shoter & converter functions
 mode: single
