@@ -7,13 +7,15 @@ import (
 	"unsafe"
 )
 
+var ImageCache *image.YCbCr
+
 func RGBToYCbCr(r, g, b uint8) (y, cb, cr uint8) {
 	ret := C.RGBToYCbCr((C.uchar)(r), (C.uchar)(g), (C.uchar)(b))
 	return uint8(ret.Y), uint8(ret.Cb), uint8(ret.Cr)
 }
 
 func CRGBToYCbCr444Linux(data, y, cb, cr []byte) {
-	C.ImageRGBToYCbCr444((*C.uchar)(unsafe.Pointer(&data[0])),
+	C.ImageRGBToYCbCr4442((*C.uchar)(unsafe.Pointer(&data[0])),
 		C.int32_t(len(data)),
 		(*C.uchar)(unsafe.Pointer(&y[0])),
 		(*C.uchar)(unsafe.Pointer(&cb[0])),
@@ -21,7 +23,7 @@ func CRGBToYCbCr444Linux(data, y, cb, cr []byte) {
 }
 
 func CRGBToYCbCr444Windows(data, y, cb, cr []byte) {
-	C.ImageRGBToYCbCr444((*C.uchar)(unsafe.Pointer(&data[0])),
+	C.ImageRGBToYCbCr4442((*C.uchar)(unsafe.Pointer(&data[0])),
 		C.int32_t(len(data)),
 		(*C.uchar)(unsafe.Pointer(&y[0])),
 		(*C.uchar)(unsafe.Pointer(&cb[0])),
