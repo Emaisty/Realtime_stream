@@ -3,7 +3,7 @@
 Project create to Inno final contest.
 Created by @Emaisty, @alexnurin, @fokurly and @kodzhimbo.(t.me)
 
-
+1)
 ```
 $mkdir Screenstreamer
 $cd ScreenStreamer
@@ -15,3 +15,7 @@ $. ./dev.sh
 $go build cmd/mjpeg/mjpeg.go
 $./mjpeg
 ```
+When, you can go to ip and port (add /mjpeg), which located in configuration.mjpeg.yml
+
+(Standart "0.0.0.0:8080/mjpeg")
+But, if you want to connect from other device, you should change ip of server to ip of your main machine. 
