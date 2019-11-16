@@ -1,7 +1,3 @@
-// Created on 2015-07-15
-// summary: get handler
-// author: YangHaitao
-
 package handlers
 
 import (

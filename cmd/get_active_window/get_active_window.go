@@ -1,7 +1,3 @@
-// Created on 2017-03-04
-// summary: ScreenStreamer
-// author: YangHaitao
-
 package main
 
 import (

@@ -1,7 +1,3 @@
-// Created on 2015-08-03
-// summary: stop handler
-// author: YangHaitao
-
 package handlers
 
 import (

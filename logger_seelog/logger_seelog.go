@@ -1,7 +1,3 @@
-// Created on 2015-07-31
-// summary: logger_seelog
-// author: YangHaitao
-
 package logger_seelog
 
 import (

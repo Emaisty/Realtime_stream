@@ -1,7 +1,3 @@
-// Created on 2015-07-20
-// summary: config
-// author: YangHaitao
-
 package config
 
 import (
