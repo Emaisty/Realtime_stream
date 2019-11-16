@@ -6,6 +6,7 @@ test/*.jpeg
 test/*.jpg
 *.h264
 *.flv
+
 *.mp4
 *.txt
 *.mp3
