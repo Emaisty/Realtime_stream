@@ -5,6 +5,7 @@ Created by @Emaisty, @alexnurin, @fokurly and @kodzhimbo.(t.me)
 
 1)
 ```
+$sudo apt-get install libjpeg-turbo8-dev libavcodec-dev libavformat-dev
 $mkdir Screenstreamer
 $cd ScreenStreamer
 $git clone https://github.com/Emaisty/Realtime_stream.git src/ScreenStreamer
